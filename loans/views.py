@@ -8,6 +8,7 @@ from .serializers import *
 from authentication.models import User
 from django.http import JsonResponse
 from datetime import date
+from django.db.models import Sum
 
 
 # Create your views here.
@@ -203,31 +204,37 @@ def rejected_request(request, id):
 #Loan processes
 #-------------------------------------------------------------------------------------------------------------------------------------
 
-@api_view (['GET'])
+@api_view(['GET'])
 def getDashboard(request):
     if request.method == 'GET':
-        totalCustomer = User.objects.all().count(),
-        # requestLoan = loanRequest.objects.all().filter(status='pending').count(),
-        # approved = loanRequest.objects.all().filter(status='approved').count(),
-        # rejected = loanRequest.objects.all().filter(status='rejected').count(),
-        # totalLoan = CustomerLoan.objects.aggregate(Sum('total_loan'))[
-        #     'total_loan__sum'],
-        # totalPayable = CustomerLoan.objects.aggregate(
-        #     Sum('payable_loan'))['payable_loan__sum'],
-        # totalPaid = loanTransaction.objects.aggregate(Sum('payment'))[
-        #     'payment__sum'],
+        totalCustomer = User.objects.all().count()
+        requestLoan = LoanRequest.objects.all().filter(status='Pending').count()
+        approved = LoanRequest.objects.all().filter(status='Approved').count()
+        rejected = LoanRequest.objects.all().filter(status='Rejected').count()
+        totalLoan = CustomerLoan.objects.aggregate(Sum('total_loan'))['total_loan__sum']
+        totalPayable = CustomerLoan.objects.aggregate(Sum('payable_loan'))['payable_loan__sum']
+        totalPaid = LoanPayment.objects.aggregate(Sum('amount_paid'))['amount_paid__sum']
+
+        # Extract values from tuples or assign default value of 0
+        totalLoan = totalLoan or 0
+        totalPayable = totalPayable or 0
+        totalPaid = totalPaid or 0
+
+        totalOutstandingLoan = int(totalPayable) - int(totalPaid)
 
         dict = {
-            'totalCustomer': totalCustomer[0],
-            # 'request': requestLoan[0],
-            # 'approved': approved[0],
-            # 'rejected': rejected[0],
-            # 'totalLoan': totalLoan[0],
-            # 'totalPayable': totalPayable[0],
-            # 'totalPaid': totalPaid[0],
-
+            'Total Customer': totalCustomer,
+            'Request Loan': requestLoan,
+            'Approved Loan': approved,
+            'Rejected Loan': rejected,
+            'Total Loan': totalLoan,
+            'Total Payable': totalPayable,
+            'Total Paid': totalPaid,
+            'Total Outstanding Loan': totalOutstandingLoan,
         }
         print(dict)
 
     # return render(request, 'admin/dashboard.html', context=dict)
     return JsonResponse(dict)
+
+
