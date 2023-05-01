@@ -10,7 +10,10 @@ from authentication.models import User
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import permissions
+from django.views.decorators.csrf import csrf_exempt
 
+@api_view (['POST'])
+@csrf_exempt
 def send_sms(request):
     # Set your app credentials
     username = os.environ.get('USER1')
@@ -30,18 +33,23 @@ def send_sms(request):
     phoneList=[]
     recipients = User.objects.all()
     for recipient in recipients:
+    
     #"+254768852080"
 
     # Set your message
+        print(request)
         message = request.data['message']
-
+        
+        # print(recipients)
         # Set your shortCode or senderId
         # sender = "shortCode or senderId"
         try:
             # Thats it, hit send and we'll take care of the rest.
             response = sms.send(message, ["+254{}".format(recipient.phone_number[1:])])
+            # response = sms.send(message, ["+254{}".format(recipient.phone_number[1:100])])
             print("am response sms", response)
             return HttpResponse(response)
         except Exception as e:
             return HttpResponse('Encountered an error while sending: %s' % str(e))
+            
 

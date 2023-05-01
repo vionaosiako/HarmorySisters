@@ -64,9 +64,13 @@ class CustomerLoan(models.Model):
 @receiver(post_save, sender=LoanRequest)
 def create_customer_loan(sender, instance, created, **kwargs):
     if created:
-        interest = instance.amount_requested * 0.1 # calculate interest (10% of amount_requested)
-        customer_loan = CustomerLoan.objects.create(
-            user=instance.user,
-            total_loan=instance.amount_requested,
-            payable_loan=instance.amount_requested + interest
-        )
+        if instance.status == 'Approved':
+            interest = instance.amount_requested * 0.1  # calculate interest (10% of amount_requested)
+            customer_loan = CustomerLoan.objects.create(
+                user=instance.user,
+                total_loan=instance.amount_requested
+            )
+            customer_loan.payable_loan = instance.amount_requested + interest
+            customer_loan.save()
+        
+
