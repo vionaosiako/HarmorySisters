@@ -32,24 +32,28 @@ def send_sms(request):
     # Set the numbers you want to send to in international format
     phoneList=[]
     recipients = User.objects.all()
-    for recipient in recipients:
+    # for recipient in recipients:
     
-    #"+254768852080"
+    # #"+254768852080"
 
-    # Set your message
-        print(request)
+    # # Set your message
+    #     message = request.data['message']
+       
+    #     try:
+    #         # Thats it, hit send and we'll take care of the rest.
+    #         response = sms.send(message, ["+254{}".format(recipient.phone_number[1:])])
+    #         # response = sms.send(message, ["+254{}".format(recipient.phone_number[1:100])])
+    #         print("am response sms", response)
+    #         return HttpResponse(response)
+    #     except Exception as e:
+    #         return HttpResponse('Encountered an error while sending: %s' % str(e))
+
+    for recipient in recipients:
         message = request.data['message']
-        
-        # print(recipients)
-        # Set your shortCode or senderId
-        # sender = "shortCode or senderId"
+        phone_number = "+254{}".format(recipient.phone_number[1:])
         try:
-            # Thats it, hit send and we'll take care of the rest.
-            response = sms.send(message, ["+254{}".format(recipient.phone_number[1:])])
-            # response = sms.send(message, ["+254{}".format(recipient.phone_number[1:100])])
-            print("am response sms", response)
-            return HttpResponse(response)
+            response = sms.send(message, [phone_number])
+            print("SMS response:", response)
         except Exception as e:
-            return HttpResponse('Encountered an error while sending: %s' % str(e))
-            
+            print("Error sending SMS:", str(e))        
 
