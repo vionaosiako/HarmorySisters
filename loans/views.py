@@ -223,7 +223,7 @@ def getDashboard(request):
         totalOutstandingLoan = int(totalPayable) - int(totalPaid)
 
         dict = {
-            'Total Customer': totalCustomer,
+            'Total Members': totalCustomer,
             'Request Loan': requestLoan,
             'Approved Loan': approved,
             'Rejected Loan': rejected,
@@ -236,5 +236,4 @@ def getDashboard(request):
 
     # return render(request, 'admin/dashboard.html', context=dict)
     return JsonResponse(dict)
-
 
