@@ -236,4 +236,3 @@ def getDashboard(request):
 
     # return render(request, 'admin/dashboard.html', context=dict)
     return JsonResponse(dict)
-
