@@ -18,6 +18,7 @@ class LoanCategory(models.Model):
 
     def __str__(self):
         return self.loan_name
+
 class LoanRequest(models.Model):
     id =models.CharField(max_length=6, primary_key = True, editable=False, unique=True)
     user =  models.ForeignKey(User, on_delete=models.CASCADE)
@@ -39,20 +40,11 @@ class LoanRequest(models.Model):
         if not self.id:
             self.id = get_random_string(length=6, allowed_chars='123456')
         return super(LoanRequest, self).save(*args, **kwargs)
-    
-class LoanPayment(models.Model):
-    payment_id = models.CharField(max_length=6, primary_key = True, editable=False, unique=True)
-    loan_id =  models.ForeignKey(LoanRequest, on_delete=models.CASCADE)
-    amount_paid = models.IntegerField(default=0)
-    date_paid = models.DateField(auto_now_add=True)
-    # user = models.ForeignKey(User, on_delete=models.CASCADE, null=True,blank=True)
-    def __str__(self):
-        return self.loan_id
-    def save(self, *args, **kwargs):
-        if not self.payment_id:
-            self.payment_id = get_random_string(length=6, allowed_chars='123456')
-        return super(LoanPayment, self).save(*args,**kwargs)
 
+    def save_instance(self):
+        self.save()
+
+    
 class CustomerLoan(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='loan_user')
     total_loan = models.PositiveIntegerField(default=0)
@@ -61,16 +53,30 @@ class CustomerLoan(models.Model):
     def __str__(self):
         return self.user.username
 
-@receiver(post_save, sender=LoanRequest)
+@receiver(post_save, sender=LoanRequest, dispatch_uid='create_customer_loan')
 def create_customer_loan(sender, instance, created, **kwargs):
-    if created:
-        if instance.status == 'Approved':
-            interest = instance.amount_requested * 0.1  # calculate interest (10% of amount_requested)
-            customer_loan = CustomerLoan.objects.create(
-                user=instance.user,
-                total_loan=instance.amount_requested
-            )
-            customer_loan.payable_loan = instance.amount_requested + interest
-            customer_loan.save()
-        
+    print(kwargs)
+    # if created or kwargs.get('update_fields') == {'status'}:
+    if instance.status == 'Approved':
+        interest = instance.amount_requested * 0.1  # calculate interest (10% of amount_requested)
+        customer_loan = CustomerLoan.objects.create(
+            user=instance.user,
+            total_loan=instance.amount_requested
+        )
+        customer_loan.payable_loan = instance.amount_requested + interest
+        customer_loan.save()
 
+
+class LoanPayment(models.Model):
+    payment_id = models.CharField(max_length=6, primary_key=True, editable=False, unique=True)
+    loan_id = models.ForeignKey(LoanRequest, on_delete=models.CASCADE)
+    amount_paid = models.IntegerField(default=0)
+    date_paid = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.loan_id)
+
+    def save(self, *args, **kwargs):
+        if not self.payment_id:
+            self.payment_id = get_random_string(length=6, allowed_chars='123456')
+        super().save(*args, **kwargs)
