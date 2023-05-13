@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.utils.crypto import get_random_string
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save,pre_delete
 from django.dispatch import receiver
 # Create your models here.
 STATUS =(
@@ -66,6 +66,13 @@ def create_customer_loan(sender, instance, created, **kwargs):
         customer_loan.payable_loan = instance.amount_requested + interest
         customer_loan.save()
 
+@receiver(pre_delete, sender=LoanRequest, dispatch_uid='delete_customer_loan')
+def delete_customer_loan(sender, instance, **kwargs):
+    try:
+        customer_loan = CustomerLoan.objects.get(user=instance.user)
+        customer_loan.delete()
+    except CustomerLoan.DoesNotExist:
+        pass
 
 class LoanPayment(models.Model):
     payment_id = models.CharField(max_length=6, primary_key=True, editable=False, unique=True)
@@ -80,3 +87,4 @@ class LoanPayment(models.Model):
         if not self.payment_id:
             self.payment_id = get_random_string(length=6, allowed_chars='123456')
         super().save(*args, **kwargs)
+        
