@@ -87,4 +87,17 @@ class LoanPayment(models.Model):
         if not self.payment_id:
             self.payment_id = get_random_string(length=6, allowed_chars='123456')
         super().save(*args, **kwargs)
+
+@receiver(post_save, sender=LoanRequest, dispatch_uid='create_loan_payment')
+def create_loan_payment(sender, instance, **kwargs):
+    if instance.status == 'Approved':
+        # Create a new LoanPayment object
+        payment = LoanPayment()
+        
+        # Set the relevant fields in the LoanPayment object
+        payment.loan_id = instance
+        # Set other fields as needed
+        
+        # Save the LoanPayment object
+        payment.save()
         
