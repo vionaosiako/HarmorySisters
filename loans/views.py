@@ -5,6 +5,7 @@ from rest_framework import permissions
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser # image upload
 from .models import *
 from .serializers import *
+from contributions.models import MonthlyContribution
 from authentication.models import User
 from django.http import JsonResponse
 from datetime import date
@@ -209,6 +210,7 @@ def getDashboard(request):
     if request.method == 'GET':
         totalCustomer = User.objects.all().count()
         requestLoan = LoanRequest.objects.all().filter(status='Pending').count()
+        totalContribution = MonthlyContribution.objects.aggregate(Sum('Amount'))['Amount__sum']
         approved = LoanRequest.objects.all().filter(status='Approved').count()
         rejected = LoanRequest.objects.all().filter(status='Rejected').count()
         totalLoan = CustomerLoan.objects.aggregate(Sum('total_loan'))['total_loan__sum']
@@ -219,6 +221,7 @@ def getDashboard(request):
         totalLoan = totalLoan or 0
         totalPayable = totalPayable or 0
         totalPaid = totalPaid or 0
+        totalContribution = totalContribution or 0
 
         totalOutstandingLoan = int(totalPayable) - int(totalPaid)
 
@@ -231,8 +234,10 @@ def getDashboard(request):
             'Total Payable': totalPayable,
             'Total Paid': totalPaid,
             'Total Outstanding Loan': totalOutstandingLoan,
+            'Total Contribution': totalContribution
         }
         print(dict)
 
     # return render(request, 'admin/dashboard.html', context=dict)
     return JsonResponse(dict)
+
