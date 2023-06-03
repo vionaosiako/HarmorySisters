@@ -10,5 +10,6 @@ urlpatterns = [
     path('loanpayment/<int:id>', getLoanPaymentDetails,name='loanpaymentDetails'),
     
     path('getdashboard/', getDashboard),
-    path('getrejectedloans/', rejectedLoans),
+    path('approvedLoans/', getApprovedLoans),
+    path('rejectedloans/', getRejectedLoans),
 ]
