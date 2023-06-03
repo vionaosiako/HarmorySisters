@@ -140,66 +140,45 @@ def getLoanPaymentDetails(request,id):
         return Response('Loan Payment Successfully Deleted!')
 
 #-------------------------------------------------------------------------------------------------------------------------------------
+#Pending Loans
+#-------------------------------------------------------------------------------------------------------------------------------------
+@api_view (['GET'])
+def getPendingLoans(request):
+    if request.method == 'GET':
+        loanApproved = LoanRequest.objects.filter(status='Pending')
+        serializedData = LoanRequestSerializer(instance = loanApproved, many=True)
+        for value in serializedData.data:
+            user=User.objects.filter(id=value['user']).first()
+            value['first_name']=user.first_name
+            value['last_name']=user.last_name
+        return Response(serializedData.data)
+
+#-------------------------------------------------------------------------------------------------------------------------------------
 #Loan approved
 #-------------------------------------------------------------------------------------------------------------------------------------
-@api_view(['GET','PUT','DELETE'])
-def approved_request(request, id):
-    speficLoanRequest = LoanRequest.objects.get(pk=id)
-    
-    today = date.today()
-    status_date = today.strftime("%B %d, %Y")
-    speficLoanRequest.status_date = status_date
-    speficLoanRequest.save()
-    year = speficLoanRequest.payment_period_years
-
-    approved_user = LoanRequest.objects.get(id=id).user
-    if CustomerLoan.objects.filter(user=approved_user).exists():
-
-        # find previous amount of user
-        PreviousAmount = CustomerLoan.objects.get(
-            user=approved_user).total_loan
-        PreviousPayable = CustomerLoan.objects.get(
-            user=approved_user).payable_loan
-
-        # update balance
-        CustomerLoan.objects.filter(
-            user=approved_user).update(total_loan=int(PreviousAmount)+int(loan_obj.amount_requested))
-        CustomerLoan.objects.filter(
-            user=approved_user).update(payable_loan=int(PreviousPayable)+int(loan_obj.amount_requested)+int(loan_obj.amount_requested)*0.12*int(year))
-
-    else:
-
-        # request user
-
-        # CustomerLoan object create
-        save_loan = CustomerLoan()
-
-        save_loan.customer = approved_user
-        save_loan.total_loan = int(speficLoanRequest.amount_requested)
-        save_loan.payable_loan = int(
-            speficLoanRequest.amount_requested)+int(speficLoanRequest.amount_requested)*0.12*int(year)
-        save_loan.save()
-
-    loanRequest.objects.filter(id=id).update(status='approved')
-    loanrequest = loanRequest.objects.filter(status='pending')
-    # return render(request, 'admin/request_user.html', context={'loanrequest': loanrequest})
-    return JsonResponse(context={'loanrequest': loanrequest})
+@api_view (['GET'])
+def getApprovedLoans(request):
+    if request.method == 'GET':
+        loanApproved = LoanRequest.objects.filter(status='Approved')
+        serializedData = LoanRequestSerializer(instance = loanApproved, many=True)
+        for value in serializedData.data:
+            user=User.objects.filter(id=value['user']).first()
+            value['first_name']=user.first_name
+            value['last_name']=user.last_name
+        return Response(serializedData.data)
 #-------------------------------------------------------------------------------------------------------------------------------------
 #Loan disapproved
 #-------------------------------------------------------------------------------------------------------------------------------------
-
-def rejected_request(request, id):
-
-    today = date.today()
-    status_date = today.strftime("%B %d, %Y")
-    loan_obj = loanRequest.objects.get(id=id)
-    loan_obj.status_date = status_date
-    loan_obj.save()
-    # rejected_customer = loanRequest.objects.get(id=id).customer
-    # print(rejected_customer)
-    loanRequest.objects.filter(id=id).update(status='rejected')
-    loanrequest = loanRequest.objects.filter(status='pending')
-    return render(request, 'admin/request_user.html', context={'loanrequest': loanrequest})
+@api_view (['GET'])
+def getRejectedLoans(request):
+    if request.method == 'GET':
+        loanRejected = LoanRequest.objects.filter(status='Rejected')
+        serializedData = LoanRequestSerializer(instance = loanRejected, many=True)
+        for value in serializedData.data:
+            user=User.objects.filter(id=value['user']).first()
+            value['first_name']=user.first_name
+            value['last_name']=user.last_name
+        return Response(serializedData.data)
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 #Loan processes
