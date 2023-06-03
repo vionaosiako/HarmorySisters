@@ -140,6 +140,20 @@ def getLoanPaymentDetails(request,id):
         return Response('Loan Payment Successfully Deleted!')
 
 #-------------------------------------------------------------------------------------------------------------------------------------
+#Pending Loans
+#-------------------------------------------------------------------------------------------------------------------------------------
+@api_view (['GET'])
+def getPendingLoans(request):
+    if request.method == 'GET':
+        loanApproved = LoanRequest.objects.filter(status='Pending')
+        serializedData = LoanRequestSerializer(instance = loanApproved, many=True)
+        for value in serializedData.data:
+            user=User.objects.filter(id=value['user']).first()
+            value['first_name']=user.first_name
+            value['last_name']=user.last_name
+        return Response(serializedData.data)
+
+#-------------------------------------------------------------------------------------------------------------------------------------
 #Loan approved
 #-------------------------------------------------------------------------------------------------------------------------------------
 @api_view (['GET'])
