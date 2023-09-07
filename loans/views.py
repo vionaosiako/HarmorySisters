@@ -7,6 +7,7 @@ from .models import *
 from .serializers import *
 from contributions.models import MonthlyContribution
 from authentication.models import User
+from contributions.models import MonthlyContribution
 from django.http import JsonResponse
 from datetime import date
 from django.db.models import Sum
@@ -183,7 +184,6 @@ def getRejectedLoans(request):
 #-------------------------------------------------------------------------------------------------------------------------------------
 #Loan processes
 #-------------------------------------------------------------------------------------------------------------------------------------
-
 @api_view(['GET'])
 def getDashboard(request):
     if request.method == 'GET':
@@ -216,7 +216,12 @@ def getDashboard(request):
             'Total Contribution': totalContribution
         }
         print(dict)
-
-    # return render(request, 'admin/dashboard.html', context=dict)
     return JsonResponse(dict)
 
+#-------------------------------------------------------------------------------------------------------------------------------------
+# Total Monthly Contribution
+#-------------------------------------------------------------------------------------------------------------------------------------
+def calculate_total_amount(reg_number):
+    total_amount = MonthlyContribution.objects.filter(reg_number=reg_number).aggregate(Sum('Amount'))
+    print(total_amount)
+    return total_amount['Amount__sum'] or 0

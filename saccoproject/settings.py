@@ -93,6 +93,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'harmorysisters',
+        # 'NAME': 'trial',
         'USER': 'lioness',
         'PASSWORD':'password'
     }

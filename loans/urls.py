@@ -7,8 +7,7 @@ urlpatterns = [
     path('loanrequest/',getLoanRequest,name='loanrequest'),
     path('loanrequest/<int:id>', getLoanRequestDetails,name='loanrequestDetails'),
     path('loanpayment/',getLoanPayment,name='loanpayment'),
-    path('loanpayment/<int:id>', getLoanPaymentDetails,name='loanpaymentDetails'),
-    
+    path('loanpayment/<int:id>', getLoanPaymentDetails,name='loanpaymentDetails'),  
     path('getdashboard/', getDashboard),
     path('pendingLoans/', getPendingLoans),
     path('approvedLoans/', getApprovedLoans),
